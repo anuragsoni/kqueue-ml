@@ -1,0 +1,4 @@
+(library
+ (name kqueue_io)
+ (public_name kqueue.io)
+ (libraries kqueue))

@@ -1,3 +1,3 @@
 (executables
- (names timer echo_server oneshot_timer)
- (libraries kqueue))
+ (names timer echo_server oneshot_timer echo_server_new)
+ (libraries kqueue kqueue.io logs.fmt logs fmt.tty))
