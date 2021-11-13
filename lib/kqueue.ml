@@ -83,9 +83,9 @@ module Kevent = struct
 
   let event_fd_offset = event_fd_offset ()
 
-  (* external event_filter_offset : unit -> int = "kqueue_ml_kevent_offset_filter" *)
+  external event_filter_offset : unit -> int = "kqueue_ml_kevent_offset_filter"
 
-  (* let event_filter_offset = event_filter_offset () *)
+  let event_filter_offset = event_filter_offset ()
 
   external event_flags_offset : unit -> int = "kqueue_ml_kevent_offset_flags"
 
@@ -94,6 +94,22 @@ module Kevent = struct
   let read_fd_at buf idx =
     Fd.of_int
       (Bigstring.unsafe_get_int32_le buf ~pos:((idx * kevent_sizeof) + event_fd_offset))
+  ;;
+
+  let read_filter_at buf idx =
+    let filter =
+      Bigstring.unsafe_get_int16_le buf ~pos:((idx * kevent_sizeof) + event_filter_offset)
+    in
+    if filter = Filter.evfilt_read
+    then `Read
+    else if filter = Filter.evfilt_write
+    then `Write
+    else (
+      let msg =
+        Printf.sprintf "Only read and write filters are handled for now %d" filter
+      in
+      (* TODO: handle more filters *)
+      failwith msg)
   ;;
 
   let read_flags_at buf idx =
@@ -161,7 +177,10 @@ let wait t timeout =
 
 let iter_ready t ~f =
   for i = 0 to t.ready_events - 1 do
-    f (Kevent.read_fd_at t.events i) (Kevent.read_flags_at t.events i)
+    f
+      (Kevent.read_fd_at t.events i)
+      (Kevent.read_flags_at t.events i)
+      (Kevent.read_filter_at t.events i)
   done
 ;;
 

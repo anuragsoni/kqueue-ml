@@ -191,6 +191,7 @@ let accept_loop state socket k =
     let client_fd, _ = Unix.accept ~cloexec:true socket in
     Server_state.add_client state client_fd;
     Kqueue.add k client_fd `Read;
+    Kqueue.add k client_fd `Write;
     Kqueue.add k socket `Read
   with
   | Unix.Unix_error ((EAGAIN | EWOULDBLOCK), _, _) -> Kqueue.add k socket `Read
@@ -203,38 +204,43 @@ let server_loop socket k =
     match Kqueue.wait k Core_kernel.Time_ns.Span.zero with
     | `Timeout -> run ()
     | `Ok ->
-      Kqueue.iter_ready k ~f:(fun fd flags ->
+      Kqueue.iter_ready k ~f:(fun fd flags event ->
           if Kqueue.Flag.(do_intersect ev_eof flags)
           then Unix.close fd
           else if socket = fd
           then accept_loop state socket k
           else (
-            let rec aux () =
-              match Server_state.perform_read state fd with
-              | `Nothing_available -> ()
-              | `Eof -> Server_state.remove_client state fd
-              | `Read_some ->
-                Server_state.with_state state fd ~f:(fun ~read_buf ~write_buf ->
-                    let payload = "+PONG\r\n" in
-                    Buf.Consume.unsafe_bigstring read_buf ~f:(fun buf ~pos ~len ->
-                        for i = pos to len - 1 do
-                          if Core.Bigstring.get buf i = '\n'
-                          then Buf.Fill.string write_buf payload
-                        done;
-                        len));
-                (match Server_state.write state fd with
-                | `Ok -> aux ()
-                | `Eof -> Server_state.remove_client state fd)
-            in
-            aux ();
-            Kqueue.add k fd `Read));
+            match event with
+            | `Write ->
+              (match Server_state.write state fd with
+              | `Ok -> ()
+              | `Eof -> Server_state.remove_client state fd)
+            | `Read ->
+              let rec aux () =
+                match Server_state.perform_read state fd with
+                | `Nothing_available -> ()
+                | `Eof -> Server_state.remove_client state fd
+                | `Read_some ->
+                  Server_state.with_state state fd ~f:(fun ~read_buf ~write_buf ->
+                      let payload = "+PONG\r\n" in
+                      Buf.Consume.unsafe_bigstring read_buf ~f:(fun buf ~pos ~len ->
+                          for i = pos to len - 1 do
+                            if Core.Bigstring.get buf i = '\n'
+                            then Buf.Fill.string write_buf payload
+                          done;
+                          len));
+                  aux ()
+              in
+              aux ();
+              Kqueue.add k fd `Read;
+              Kqueue.add k fd `Write));
       run ()
   in
   run ()
 ;;
 
-let run () =
-  let socket = Unix.socket ~cloexec:true Unix.PF_INET Unix.SOCK_STREAM 0 in
+let run sock_path =
+  let socket = Unix.socket ~cloexec:true Unix.PF_UNIX Unix.SOCK_STREAM 0 in
   let k = Kqueue.kqueue ~changelist_size:64 ~fd_count:65536 in
   Fun.protect
     ~finally:(fun () ->
@@ -242,11 +248,10 @@ let run () =
       Kqueue.close k)
     (fun () ->
       Unix.set_nonblock socket;
-      let addr = Unix.inet_addr_of_string "127.0.0.1" in
-      Unix.bind socket (Unix.ADDR_INET (addr, 8080));
+      Unix.bind socket (Unix.ADDR_UNIX sock_path);
       Unix.listen socket 11_000;
       Kqueue.add k socket `Read;
       server_loop socket k)
 ;;
 
-let () = run ()
+let () = run Sys.argv.(1)
