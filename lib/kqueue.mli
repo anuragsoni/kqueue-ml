@@ -20,7 +20,7 @@ type event =
   | `Write
   ]
 
-val kqueue : changelist_size:int -> fd_count:int -> t
+val kqueue : changelist_size:int -> t
 val add : t -> Caml_unix.file_descr -> event -> unit
 val wait : t -> Time_ns.Span.t -> [ `Ok | `Timeout ]
 val iter_ready : t -> f:(Caml_unix.file_descr -> Flag.t -> event -> unit) -> unit

@@ -122,7 +122,6 @@ end
 
 type t =
   { kqueue_fd : Fd.t
-  ; fds_watching : (Fd.t, Flag.t) Bounded_int_table.t
   ; changelist_size : int
   ; mutable ready_events : int
   ; events : (Bigstring.t[@sexp.opaque])
@@ -131,16 +130,10 @@ type t =
 
 external kqueue_create : unit -> Unix.file_descr = "kqueue_ml_kqueue_create"
 
-let kqueue ~changelist_size ~fd_count =
+let kqueue ~changelist_size =
   { kqueue_fd = kqueue_create ()
   ; changelist_size
   ; ready_events = 0
-  ; fds_watching =
-      Bounded_int_table.create
-        ~sexp_of_key:Fd.sexp_of_t
-        ~num_keys:fd_count
-        ~key_to_int:Fd.to_int
-        ()
   ; events = Bigstring.create (Kevent.kevent_sizeof * changelist_size)
   }
 ;;
