@@ -205,7 +205,7 @@ let server_loop socket k =
     | `Timeout -> run ()
     | `Ok ->
       Kqueue.iter_ready k ~f:(fun fd flags event ->
-          if Kqueue.Flag.(do_intersect ev_eof flags)
+          if Kqueue.Flag.(is_subset ev_eof ~of_:flags)
           then Unix.close fd
           else if socket = fd
           then accept_loop state socket k
