@@ -19,31 +19,37 @@
   CAMLprim value name(value unit) { return Val_int(i); }
 
 CAMLprim value kqueue_ml_kqueue_create(value unit) {
+  CAMLparam1(unit);
   int k;
   k = kqueue();
   if (k == -1)
     uerror("kqueue", Nothing);
   fcntl(k, F_SETFD, FD_CLOEXEC);
-  return Val_long(k);
+  CAMLreturn(Val_long(k));
 }
 
 CAMLprim value kqueue_ml_kevent_sizeof(value unit) {
-  return Val_long(sizeof(struct kevent));
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(sizeof(struct kevent)));
 }
 
 CAMLprim value kqueue_ml_kevent_offset_event_fd(value unit) {
-  return Val_int(offsetof(struct kevent, ident));
+  CAMLparam1(unit);
+  CAMLreturn(Val_int(offsetof(struct kevent, ident)));
 }
 
 CAMLprim value kqueue_ml_kevent_offset_filter(value unit) {
-  return Val_int(offsetof(struct kevent, filter));
+  CAMLparam1(unit);
+  CAMLreturn(Val_int(offsetof(struct kevent, filter)));
 }
 
 CAMLprim value kqueue_ml_kevent_offset_flags(value unit) {
-  return Val_int(offsetof(struct kevent, flags));
+  CAMLparam1(unit);
+  CAMLreturn(Val_int(offsetof(struct kevent, flags)));
 }
 
 CAMLprim value kqueue_ml_modify_fd(value kqueue_fd, value fd, value filter, value flags) {
+  CAMLparam4(kqueue_fd, fd, filter, flags);
   struct kevent event;
   EV_SET(&event, Long_val(fd), Int_val(filter), Int_val(flags), 0, 0, 0);
 
@@ -51,7 +57,7 @@ CAMLprim value kqueue_ml_modify_fd(value kqueue_fd, value fd, value filter, valu
   ret = kevent(Long_val(kqueue_fd), &event, 1, NULL, 0, NULL);
   if (ret == -1)
     uerror("kevent", Nothing);
-  return Val_long(ret);
+  CAMLreturn(Val_long(ret));
 }
 
 CAMLprim value kqueue_ml_wait(value kqueue_fd, value eventlist, value timeout) {
