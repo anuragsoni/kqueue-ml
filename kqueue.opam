@@ -10,8 +10,6 @@ doc: "https://anuragsoni.github.io/kqueue-ml"
 bug-reports: "https://github.com/anuragsoni/kqueue-ml/issues"
 depends: [
   "dune" {>= "2.6"}
-  "core_kernel"
-  "ppx_jane"
   "ocaml" {>= "4.11"}
 ]
 build: [
