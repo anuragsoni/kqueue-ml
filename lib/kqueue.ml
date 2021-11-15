@@ -37,7 +37,7 @@ end = struct
 
   let unsafe_set_int64_swap t ~pos v = unsafe_set_int64 t pos (swap64 (Int64.of_int v))
   let unsafe_set_int64 t ~pos v = unsafe_set_int64 t pos (Int64.of_int v)
-  let unsafe_set_int64_le = if Sys.big_endian then unsafe_set_int64 else unsafe_set_int64
+  let unsafe_set_int64_le = if Sys.big_endian then unsafe_set_int64_swap else unsafe_set_int64
   let unsafe_get_int32_le_swap t ~pos = Int32.to_int (swap32 (unsafe_get_int32 t pos))
   let unsafe_get_int32_le t ~pos = Int32.to_int (unsafe_get_int32 t pos)
 
