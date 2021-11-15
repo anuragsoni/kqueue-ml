@@ -63,6 +63,7 @@ module Fd = struct
   type t = Unix.file_descr
 
   let of_int : int -> Unix.file_descr = Obj.magic
+  let to_int : Unix.file_descr -> int = Obj.magic
 end
 
 module Filter = struct
@@ -156,6 +157,18 @@ module Kevent = struct
 
   let event_flags_offset = event_flags_offset ()
 
+  external event_fflags_offset : unit -> int = "kqueue_ml_kevent_offset_fflags"
+
+  let event_fflags_offset = event_fflags_offset ()
+
+  external event_data_offset : unit -> int = "kqueue_ml_kevent_offset_data"
+
+  let event_data_offset = event_data_offset ()
+
+  external event_udata_offset : unit -> int = "kqueue_ml_kevent_offset_udata"
+
+  let event_udata_offset = event_udata_offset ()
+
   let read_fd_at buf idx =
     if Sys.word_size = 32
     then
@@ -167,6 +180,22 @@ module Kevent = struct
         (Bigstring.unsafe_get_int64_le_trunc
            buf
            ~pos:((idx * kevent_sizeof) + event_fd_offset))
+    else failwith (Printf.sprintf "Unexpected word size %d" Sys.word_size)
+  ;;
+
+  let write_fd_at buf idx fd =
+    if Sys.word_size = 64
+    then
+      Bigstring.unsafe_set_int64_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_fd_offset)
+        (Fd.to_int fd)
+    else if Sys.word_size = 32
+    then
+      Bigstring.unsafe_set_int32_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_fd_offset)
+        (Fd.to_int fd)
     else failwith (Printf.sprintf "Unexpected word size %d" Sys.word_size)
   ;;
 
@@ -186,8 +215,70 @@ module Kevent = struct
       failwith msg)
   ;;
 
+  let write_filter_at buf idx filter =
+    Bigstring.unsafe_set_int16_le
+      buf
+      ~pos:((idx * kevent_sizeof) + event_filter_offset)
+      filter
+  ;;
+
   let read_flags_at buf idx =
     Bigstring.unsafe_get_int16_le buf ~pos:((idx * kevent_sizeof) + event_flags_offset)
+  ;;
+
+  let write_flags_at buf idx flags =
+    Bigstring.unsafe_set_int16_le
+      buf
+      ~pos:((idx * kevent_sizeof) + event_flags_offset)
+      flags
+  ;;
+
+  let write_fflags_at buf idx fflags =
+    Bigstring.unsafe_set_int32_le
+      buf
+      ~pos:((idx * kevent_sizeof) + event_fflags_offset)
+      fflags
+  ;;
+
+  let write_data_at buf idx data =
+    if Sys.word_size = 64
+    then
+      Bigstring.unsafe_set_int64_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_data_offset)
+        data
+    else if Sys.word_size = 32
+    then
+      Bigstring.unsafe_set_int32_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_data_offset)
+        data
+    else failwith (Printf.sprintf "Unexpected word size %d" Sys.word_size)
+  ;;
+
+  let write_udata_at buf idx data =
+    if Sys.word_size = 64
+    then
+      Bigstring.unsafe_set_int64_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_udata_offset)
+        data
+    else if Sys.word_size = 32
+    then
+      Bigstring.unsafe_set_int32_le
+        buf
+        ~pos:((idx * kevent_sizeof) + event_udata_offset)
+        data
+    else failwith (Printf.sprintf "Unexpected word size %d" Sys.word_size)
+  ;;
+
+  let write_event ev ~idx fd ~filter ~flag =
+    write_fd_at ev idx fd;
+    write_filter_at ev idx filter;
+    write_flags_at ev idx flag;
+    write_fflags_at ev idx 0;
+    write_data_at ev idx 0;
+    write_udata_at ev idx 0
   ;;
 end
 
@@ -235,13 +326,18 @@ let event_to_filter = function
   | `Write -> Filter.evfilt_write
 ;;
 
-external kqueue_modify_fd : Fd.t -> Fd.t -> int -> int -> int = "kqueue_ml_modify_fd"
+external kqueue_modify_fd : Fd.t -> Bigstring.t -> int = "kqueue_ml_modify_fd"
 external kqueue_wait : Fd.t -> Bigstring.t -> int -> int = "kqueue_ml_wait"
 
 let add t fd event =
-  let filter = event_to_filter event in
-  let flags = Flag.(ev_add + ev_oneshot) in
-  ignore (kqueue_modify_fd t.kqueue_fd fd filter flags : int)
+  let ev = Bigstring.create Kevent.kevent_sizeof in
+  Kevent.write_event
+    ev
+    ~idx:0
+    fd
+    ~flag:Flag.(ev_add + ev_oneshot)
+    ~filter:(event_to_filter event);
+  ignore (kqueue_modify_fd t.kqueue_fd ev)
 ;;
 
 let wait t timeout =
