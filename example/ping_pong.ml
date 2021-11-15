@@ -190,8 +190,7 @@ let accept_loop state socket k =
   try
     let client_fd, _ = Unix.accept ~cloexec:true socket in
     Server_state.add_client state client_fd;
-    Kqueue.add k client_fd `Read;
-    Kqueue.add k client_fd `Write;
+    Kqueue.add k client_fd `Read_write;
     Kqueue.add k socket `Read
   with
   | Unix.Unix_error ((EAGAIN | EWOULDBLOCK), _, _) -> Kqueue.add k socket `Read
@@ -232,8 +231,7 @@ let server_loop socket k =
                   aux ()
               in
               aux ();
-              Kqueue.add k fd `Read;
-              Kqueue.add k fd `Write));
+              Kqueue.add k fd `Read_write));
       run ()
   in
   run ()

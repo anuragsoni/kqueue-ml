@@ -330,14 +330,31 @@ external kqueue_modify_fd : Fd.t -> Bigstring.t -> int = "kqueue_ml_modify_fd"
 external kqueue_wait : Fd.t -> Bigstring.t -> int -> int = "kqueue_ml_wait"
 
 let add t fd event =
-  let ev = Bigstring.create Kevent.kevent_sizeof in
-  Kevent.write_event
-    ev
-    ~idx:0
-    fd
-    ~flag:Flag.(ev_add + ev_oneshot)
-    ~filter:(event_to_filter event);
-  ignore (kqueue_modify_fd t.kqueue_fd ev)
+  match event with
+  | (`Read | `Write) as event ->
+    let ev = Bigstring.create Kevent.kevent_sizeof in
+    Kevent.write_event
+      ev
+      ~idx:0
+      fd
+      ~flag:Flag.(ev_add + ev_oneshot)
+      ~filter:(event_to_filter event);
+    ignore (kqueue_modify_fd t.kqueue_fd ev)
+  | `Read_write ->
+    let ev = Bigstring.create (2 * Kevent.kevent_sizeof) in
+    Kevent.write_event
+      ev
+      ~idx:0
+      fd
+      ~flag:Flag.(ev_add + ev_oneshot)
+      ~filter:Filter.evfilt_read;
+    Kevent.write_event
+      ev
+      ~idx:1
+      fd
+      ~flag:Flag.(ev_add + ev_oneshot)
+      ~filter:Filter.evfilt_write;
+    ignore (kqueue_modify_fd t.kqueue_fd ev)
 ;;
 
 let wait t timeout =
