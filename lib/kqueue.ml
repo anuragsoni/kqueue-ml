@@ -23,39 +23,48 @@ end = struct
   external unsafe_get_int64 : t -> int -> int64 = "%caml_bigstring_get64u"
   external unsafe_set_int64 : t -> int -> int64 -> unit = "%caml_bigstring_set64u"
 
+  let unsafe_get_int64_le_trunc_swap t ~pos =
+    Int64.to_int (swap64 (unsafe_get_int64 t pos))
+  ;;
+
   let unsafe_get_int64_le_trunc t ~pos =
-    if Sys.big_endian
-    then Int64.to_int (swap64 (unsafe_get_int64 t pos))
-    else Int64.to_int (unsafe_get_int64 t pos)
+    Int64.to_int (unsafe_get_int64 t pos)
   ;;
 
-  let unsafe_set_int64_le t ~pos v =
-    if Sys.big_endian
-    then unsafe_set_int64 t pos (swap64 (Int64.of_int v))
-    else unsafe_set_int64 t pos (Int64.of_int v)
+  let unsafe_get_int64_le_trunc =
+    if Sys.big_endian then unsafe_get_int64_le_trunc_swap else unsafe_get_int64_le_trunc
   ;;
 
-  let unsafe_get_int32_le t ~pos =
-    Int32.to_int
-      (if Sys.big_endian then swap32 (unsafe_get_int32 t pos) else unsafe_get_int32 t pos)
+  let unsafe_set_int64_swap t ~pos v = unsafe_set_int64 t pos (swap64 (Int64.of_int v))
+  let unsafe_set_int64 t ~pos v = unsafe_set_int64 t pos (Int64.of_int v)
+  let unsafe_set_int64_le = if Sys.big_endian then unsafe_set_int64 else unsafe_set_int64
+  let unsafe_get_int32_le_swap t ~pos = Int32.to_int (swap32 (unsafe_get_int32 t pos))
+  let unsafe_get_int32_le t ~pos = Int32.to_int (unsafe_get_int32 t pos)
+
+  let unsafe_get_int32_le =
+    if Sys.big_endian then unsafe_get_int32_le_swap else unsafe_get_int32_le
+  ;;
+
+  let unsafe_set_int32_le_swap t ~pos v = unsafe_set_int32 t pos (swap32 (Int32.of_int v))
+  let unsafe_set_int32_le t ~pos v = unsafe_set_int32 t pos (Int32.of_int v)
+
+  let unsafe_set_int32_le =
+    if Sys.big_endian then unsafe_set_int32_le_swap else unsafe_set_int32_le
   ;;
 
   let sign_extend_16 u = (u lsl (Sys.int_size - 16)) asr (Sys.int_size - 16)
+  let unsafe_get_int16_le_swap t ~pos = sign_extend_16 (swap16 (unsafe_get_int16 t pos))
+  let unsafe_get_int16_le t ~pos = sign_extend_16 (unsafe_get_int16 t pos)
 
-  let unsafe_get_int16_le t ~pos =
-    if Sys.big_endian
-    then sign_extend_16 (swap16 (unsafe_get_int16 t pos))
-    else sign_extend_16 (unsafe_get_int16 t pos)
+  let unsafe_get_int16_le =
+    if Sys.big_endian then unsafe_get_int16_le_swap else unsafe_get_int16_le
   ;;
 
-  let unsafe_set_int32_le t ~pos v =
-    if Sys.big_endian
-    then unsafe_set_int32 t pos (swap32 (Int32.of_int v))
-    else unsafe_set_int32 t pos (Int32.of_int v)
-  ;;
+  let unsafe_set_int16_le_swap t ~pos v = unsafe_set_int16 t pos (swap16 v)
+  let unsafe_set_int16_le t ~pos v = unsafe_set_int16 t pos v
 
-  let unsafe_set_int16_le t ~pos v =
-    if Sys.big_endian then unsafe_set_int16 t pos (swap16 v) else unsafe_set_int16 t pos v
+  let unsafe_set_int16_le =
+    if Sys.big_endian then unsafe_set_int16_le_swap else unsafe_set_int16_le
   ;;
 end
 
