@@ -1,3 +1,111 @@
+[%%import "config.h"]
+
+module Null = struct
+  type t
+
+  module Util = struct
+    let file_descr_to_int : Unix.file_descr -> int = fun _ -> assert false
+    let file_descr_of_int : int -> Unix.file_descr = fun _ -> assert false
+  end
+
+  module Note = struct
+    type t = [ `Not_implemented ]
+
+    let pp _ _ = assert false
+    let equal _ _ = assert false
+    let ( = ) = equal
+    let seconds = `Not_implemented
+    let useconds = `Not_implemented
+    let nseconds = `Not_implemented
+    let lowat = `Not_implemented
+    let oob = `Not_implemented
+    let delete = `Not_implemented
+    let write = `Not_implemented
+    let extend = `Not_implemented
+    let attrib = `Not_implemented
+    let link = `Not_implemented
+    let rename = `Not_implemented
+    let revoke = `Not_implemented
+    let exit = `Not_implemented
+    let fork = `Not_implemented
+    let exec = `Not_implemented
+    let signal = `Not_implemented
+  end
+
+  module Filter = struct
+    type t = [ `Not_implemented ]
+
+    let pp _ _ = assert false
+    let equal _ _ = assert false
+    let ( = ) = equal
+    let read = `Not_implemented
+    let write = `Not_implemented
+    let timer = `Not_implemented
+    let vnode = `Not_implemented
+    let proc = `Not_implemented
+  end
+
+  module Flag = struct
+    type t = [ `Not_implemented ]
+
+    let pp _ _ = assert false
+    let equal _ _ = assert false
+    let ( = ) = equal
+    let ( + ) _ _ = assert false
+    let intersect _ _ = assert false
+    let receipt = `Not_implemented
+    let add = `Not_implemented
+    let enable = `Not_implemented
+    let disable = `Not_implemented
+    let delete = `Not_implemented
+    let oneshot = `Not_implemented
+    let clear = `Not_implemented
+    let eof = `Not_implemented
+    let error = `Not_implemented
+  end
+
+  module Event_list = struct
+    type t = [ `Not_implemented ]
+
+    let null = `Not_implemented
+    let create _ = assert false
+
+    module Event = struct
+      type t = [ `Not_implemented ]
+
+      let get_ident _ = assert false
+      let set_ident _ _ = assert false
+      let get_filter _ = assert false
+      let set_filter _ _ = assert false
+      let get_flags _ = assert false
+      let set_flags _ _ = assert false
+      let get_fflags _ = assert false
+      let set_fflags _ _ = assert false
+      let get_data _ = assert false
+      let set_data _ _ = assert false
+      let get_udata _ = assert false
+      let set_udata _ _ = assert false
+    end
+
+    let get _ _ = assert false
+  end
+
+  let create () = assert false
+  let kevent _ ~changelist:_ ~eventlist:_ _ = assert false
+  let close _ = assert false
+end
+
+module _ : Kqueue_intf.S = struct
+  include Null
+end
+
+[%%if defined(KQUEUE_AVAILABLE) && defined(KQUEUE_ML_ARCH_SIXTYFOUR)]
+
+module Util = struct
+  let file_descr_to_int : Unix.file_descr -> int = Obj.magic
+  let file_descr_of_int : int -> Unix.file_descr = Obj.magic
+end
+
 module Ffi = struct
   external kqueue : unit -> Unix.file_descr = "kqueue_ml_kqueue_create"
 
@@ -9,9 +117,6 @@ module Ffi = struct
     -> int
     = "kqueue_ml_kevent"
 end
-
-let file_descr_to_int : Unix.file_descr -> int = Obj.magic
-let file_descr_of_int : int -> Unix.file_descr = Obj.magic
 
 module Note = struct
   type t = int
@@ -344,3 +449,9 @@ let close t =
     t.closed <- true;
     Unix.close t.kqueue_fd)
 ;;
+
+[%%else]
+
+include Null
+
+[%%endif]

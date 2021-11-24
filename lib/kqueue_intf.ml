@@ -86,4 +86,9 @@ module type S = sig
   val create : unit -> t
   val kevent : t -> changelist:Event_list.t -> eventlist:Event_list.t -> int -> int
   val close : t -> unit
+
+  module Util : sig
+    val file_descr_to_int : Unix.file_descr -> int
+    val file_descr_of_int : int -> Unix.file_descr
+  end
 end

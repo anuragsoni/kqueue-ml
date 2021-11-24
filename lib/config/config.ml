@@ -12,16 +12,25 @@ let kqueue_available vars =
 
 let () =
   C.main ~name:"kqueue.conf" (fun conf ->
+      let system =
+        C.C_define.import
+          conf
+          ~includes:[ "caml/config.h" ]
+          [ "ARCH_SIXTYFOUR", C.C_define.Type.Switch ]
+      in
       let operating_systems =
-        [ "__APPLE__", C.C_define.Type.Switch
-        ; "__FreeBSD__", C.C_define.Type.Switch
-        ; "__OpenBSD__", C.C_define.Type.Switch
-        ; "__DragonFly__", C.C_define.Type.Switch
-        ; "__NetBSD__", C.C_define.Type.Switch
-        ]
+        C.C_define.import
+          conf
+          ~includes:[]
+          [ "__APPLE__", C.C_define.Type.Switch
+          ; "__FreeBSD__", C.C_define.Type.Switch
+          ; "__OpenBSD__", C.C_define.Type.Switch
+          ; "__DragonFly__", C.C_define.Type.Switch
+          ; "__NetBSD__", C.C_define.Type.Switch
+          ]
       in
       let results =
-        SMap.of_seq (List.to_seq (C.C_define.import conf ~includes:[] operating_systems))
+        SMap.of_seq (List.to_seq (List.concat [ operating_systems; system ]))
       in
       let vars =
         [ "KQUEUE_AVAILABLE", C.C_define.Value.Switch (kqueue_available results)
@@ -29,6 +38,7 @@ let () =
         ; "OPENBSD", SMap.find "__OpenBSD__" results
         ; "DRAGONFLY", SMap.find "__DragonFly__" results
         ; "NETBSD", SMap.find "__NetBSD__" results
+        ; "KQUEUE_ML_ARCH_SIXTYFOUR", SMap.find "ARCH_SIXTYFOUR" results
         ]
       in
       C.C_define.gen_header_file conf ~fname:"config.h" vars)
