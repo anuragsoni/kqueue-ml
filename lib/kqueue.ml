@@ -99,7 +99,7 @@ module _ : Kqueue_intf.S = struct
   include Null
 end
 
-[%%if defined(KQUEUE_AVAILABLE) && defined(KQUEUE_ML_ARCH_SIXTYFOUR)]
+[%%if defined KQUEUE_AVAILABLE && defined KQUEUE_ML_ARCH_SIXTYFOUR]
 
 module Util = struct
   let file_descr_to_int : Unix.file_descr -> int = Obj.magic
