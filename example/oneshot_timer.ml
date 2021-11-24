@@ -40,10 +40,18 @@ let run () =
     let changelist = Kqueue.Event_list.create 1 in
     let event = Kqueue.Event_list.get changelist 0 in
     make_ev event i 1;
-    let n = Kqueue.kevent k ~changelist ~eventlist:Kqueue.Event_list.null 0 in
+    let n =
+      Kqueue.kevent
+        k
+        ~changelist
+        ~eventlist:Kqueue.Event_list.null
+        Kqueue.Timeout.immediate
+    in
     assert (n = 0);
     let eventlist = Kqueue.Event_list.create 1 in
-    let n = Kqueue.kevent k ~changelist:Kqueue.Event_list.null ~eventlist (-1) in
+    let n =
+      Kqueue.kevent k ~changelist:Kqueue.Event_list.null ~eventlist Kqueue.Timeout.never
+    in
     assert (n = 1);
     process_event (Kqueue.Event_list.get eventlist 0);
     flush stdout

@@ -1,12 +1,21 @@
 module type S = sig
   type t
 
+  module Timeout : sig
+    type t
+
+    val never : t
+    val immediate : t
+    val of_ns : int64 -> t
+  end
+
   module Note : sig
     type t
 
     val pp : Format.formatter -> t -> unit
     val equal : t -> t -> bool
     val ( = ) : t -> t -> bool
+    val empty : t
     val seconds : t
     val useconds : t
     val nseconds : t
@@ -84,7 +93,7 @@ module type S = sig
   end
 
   val create : unit -> t
-  val kevent : t -> changelist:Event_list.t -> eventlist:Event_list.t -> int -> int
+  val kevent : t -> changelist:Event_list.t -> eventlist:Event_list.t -> Timeout.t -> int
   val close : t -> unit
 
   module Util : sig

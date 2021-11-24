@@ -3,6 +3,14 @@
 module Null = struct
   type t
 
+  module Timeout = struct
+    type t = [ `Not_implemented ]
+
+    let never = `Not_implemented
+    let immediate = `Not_implemented
+    let of_ns _ = assert false
+  end
+
   module Util = struct
     let file_descr_to_int : Unix.file_descr -> int = fun _ -> assert false
     let file_descr_of_int : int -> Unix.file_descr = fun _ -> assert false
@@ -15,6 +23,7 @@ module Null = struct
     let equal _ _ = assert false
     let ( = ) = equal
     let seconds = `Not_implemented
+    let empty = `Not_implemented
     let useconds = `Not_implemented
     let nseconds = `Not_implemented
     let lowat = `Not_implemented
@@ -113,7 +122,7 @@ module Ffi = struct
     :  Unix.file_descr
     -> Bigstring.t
     -> Bigstring.t
-    -> int
+    -> int64
     -> int
     = "kqueue_ml_kevent"
 end
@@ -123,6 +132,7 @@ module Note = struct
 
   let equal = Int.equal
   let ( = ) = equal
+  let empty = 0
 
   external seconds : unit -> int = "kqueue_note_seconds"
 
@@ -206,6 +216,7 @@ module Note = struct
     | t when t = fork -> "NOTE_FORK"
     | t when t = exec -> "NOTE_EXEC"
     | t when t = signal -> "NOTE_SIGNAL"
+    | t when t = empty -> "0"
     | t -> Printf.sprintf "Unknown Note(%d)" t
   ;;
 
@@ -428,6 +439,18 @@ module Event_list = struct
   ;;
 
   let get t idx = { Event.buf = t; idx }
+end
+
+module Timeout = struct
+  type t = int64
+
+  let never = -1L
+  let immediate = 0L
+
+  let of_ns x =
+    if x < 0L then invalid_arg "Timeout cannot be negative";
+    x
+  ;;
 end
 
 type t =

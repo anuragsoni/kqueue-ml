@@ -71,22 +71,23 @@
     struct kevent * changes;
     struct kevent * events;
     int ret, event_count, change_count;
+    int64_t ns;
+    ns = Int64_val(timeout);
     changes = (struct kevent *) Caml_ba_data_val(changelist);
     events = (struct kevent *) Caml_ba_data_val(eventlist);
     event_count = Caml_ba_array_val(eventlist)->dim[0] / sizeof (struct kevent);
     change_count = Caml_ba_array_val(changelist)->dim[0] / sizeof (struct kevent);
-    if (timeout == 0) {
+    if (ns == 0) {
       struct timespec t = { 0, 0 };
       ret = kevent(Long_val(kqueue_fd), changes, change_count, events, event_count, &t);
-    } else if (timeout < 0) {
+    } else if (ns < 0) {
       caml_enter_blocking_section();
       ret = kevent(Long_val(kqueue_fd), changes, change_count, events, event_count, NULL);
       caml_leave_blocking_section();
     } else {
       struct timespec t;
-      long ms = Long_val(timeout);
-      t.tv_sec = ms / 1000;
-      t.tv_nsec = (ms % 1000) * 1000000;
+      t.tv_sec = ns / 1000000000;
+      t.tv_nsec = (ns % 1000000000);
       caml_enter_blocking_section();
       ret = kevent(Long_val(kqueue_fd), changes, change_count, events, event_count, &t);
       caml_leave_blocking_section();
