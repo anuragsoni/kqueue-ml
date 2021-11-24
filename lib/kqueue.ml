@@ -16,6 +16,9 @@ let file_descr_of_int : int -> Unix.file_descr = Obj.magic
 module Note = struct
   type t = int
 
+  let equal = Int.equal
+  let ( = ) = equal
+
   external seconds : unit -> int = "kqueue_note_seconds"
 
   let seconds = seconds ()
@@ -79,6 +82,29 @@ module Note = struct
   external signal : unit -> int = "kqueue_note_signal"
 
   let signal = signal ()
+
+  let to_string t =
+    match t with
+    | t when t = seconds -> "NOTE_SECONDS"
+    | t when t = useconds -> "NOTE_USECONDS"
+    | t when t = nseconds -> "NOTE_NSECONDS"
+    | t when t = lowat -> "NOTE_LOWAT"
+    | t when t = oob -> "NOTE_OOB"
+    | t when t = delete -> "NOTE_DELETE"
+    | t when t = write -> "NOTE_WRITE"
+    | t when t = extend -> "NOTE_EXTEND"
+    | t when t = attrib -> "NOTE_ATTRIB"
+    | t when t = link -> "NOTE_LINK"
+    | t when t = rename -> "NOTE_RENAME"
+    | t when t = revoke -> "NOTE_REVOKE"
+    | t when t = exit -> "NOTE_EXIT"
+    | t when t = fork -> "NOTE_FORK"
+    | t when t = exec -> "NOTE_EXEC"
+    | t when t = signal -> "NOTE_SIGNAL"
+    | t -> Printf.sprintf "Unknown Note(%d)" t
+  ;;
+
+  let pp fmt t = Format.fprintf fmt "%a" Format.pp_print_string (to_string t)
 end
 
 module Flag = struct
@@ -155,7 +181,6 @@ end
 module Filter = struct
   type t = int
 
-  let pp fmt t = Format.fprintf fmt "%a" Format.pp_print_int t
   let equal a b = Int.equal a b
   let ( = ) = equal
 
@@ -178,6 +203,17 @@ module Filter = struct
   external proc : unit -> int = "kqueue_filter_evfilt_proc"
 
   let proc = proc ()
+
+  let pp fmt t =
+    let to_string = function
+      | c when c = read -> "EVFILT_READ"
+      | c when c = write -> "EVFILT_WRITE"
+      | c when c = timer -> "EVFILT_TIMER"
+      | c when c = vnode -> "EVFILT_VNODE"
+      | c -> Printf.sprintf "Unknown (%d)" c
+    in
+    Format.fprintf fmt "%a" Format.pp_print_string (to_string t)
+  ;;
 end
 
 module Kevent = struct

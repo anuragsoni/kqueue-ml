@@ -4,6 +4,9 @@ module type S = sig
   module Note : sig
     type t
 
+    val pp : Format.formatter -> t -> unit
+    val equal : t -> t -> bool
+    val ( = ) : t -> t -> bool
     val seconds : t
     val useconds : t
     val nseconds : t
