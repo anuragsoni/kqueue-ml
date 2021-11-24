@@ -38,6 +38,8 @@ module type S = sig
   module Flag : sig
     type t
 
+    val equal : t -> t -> bool
+    val ( = ) : t -> t -> bool
     val pp : Format.formatter -> t -> unit
     val ( + ) : t -> t -> t
     val intersect : t -> t -> bool

@@ -84,6 +84,8 @@ end
 module Flag = struct
   type t = int
 
+  let equal = Int.equal
+  let ( = ) = equal
   let ( + ) = ( lor )
   let intersect t1 t2 = t1 land t2 <> 0
   let is_subset t ~of_:flags = t = t land flags
