@@ -100,4 +100,6 @@ module type S = sig
     val file_descr_to_int : Unix.file_descr -> int
     val file_descr_of_int : int -> Unix.file_descr
   end
+
+  val available : bool
 end
