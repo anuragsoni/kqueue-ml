@@ -1,0 +1,10 @@
+image: openbsd/latest
+packages:
+  - opam
+sources:
+  - https://github.com/anuragsoni/kqueue-ml
+tasks:
+  - setup: |
+      opam init -a --yes
+      opam switch create 4.13.1 --yes
+      opam exec -- ocaml -version
