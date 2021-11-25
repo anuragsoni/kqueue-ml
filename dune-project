@@ -1,5 +1,7 @@
 (lang dune 2.9)
 
+(using mdx 0.1)
+
 (name kqueue)
 
 (generate_opam_files true)
@@ -22,5 +24,6 @@
  (depends
   ppx_optcomp
   (ppx_expect :with-test)
+  (mdx :with-test)
   (ocaml
    (>= 4.12))))

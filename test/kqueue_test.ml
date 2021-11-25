@@ -1,5 +1,4 @@
 [%%import "config.h"]
-
 [%%if defined KQUEUE_AVAILABLE && defined KQUEUE_ML_ARCH_SIXTYFOUR]
 
 let%expect_test "kqueue available" =
