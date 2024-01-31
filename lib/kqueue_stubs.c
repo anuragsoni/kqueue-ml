@@ -127,7 +127,9 @@
   Kqueue_constant(kqueue_note_useconds, NOTE_USECONDS)
   Kqueue_constant(kqueue_note_nseconds, NOTE_NSECONDS)
   Kqueue_constant(kqueue_note_lowat, NOTE_LOWAT)
+#ifndef __FreeBSD__
   Kqueue_constant(kqueue_note_oob, NOTE_OOB)
+#endif
   Kqueue_constant(kqueue_note_delete, NOTE_DELETE)
   Kqueue_constant(kqueue_note_write, NOTE_WRITE)
   Kqueue_constant(kqueue_note_extend, NOTE_EXTEND)
@@ -138,7 +140,9 @@
   Kqueue_constant(kqueue_note_exit, NOTE_EXIT)
   Kqueue_constant(kqueue_note_fork, NOTE_FORK)
   Kqueue_constant(kqueue_note_exec, NOTE_EXEC)
+#ifndef __FreeBSD__
   Kqueue_constant(kqueue_note_signal, NOTE_SIGNAL)
+#endif
 #else
   typedef int dummy_definition;
 #endif
