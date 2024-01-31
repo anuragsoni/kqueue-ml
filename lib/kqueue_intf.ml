@@ -81,7 +81,9 @@ module type S = sig
     val timer : t
     val vnode : t
     val proc : t
-
+    [%%if defined OPENBSD]
+    val except : t
+    [%%endif]
     [%%if defined EVFILT_USER_AVAILABLE]
 
     val user : t

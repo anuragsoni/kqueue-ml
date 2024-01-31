@@ -106,13 +106,16 @@
     Kqueue_constant(kqueue_note_ffctrlmask, NOTE_FFCTRLMASK)
     Kqueue_constant(kqueue_note_fflagsmask, NOTE_FFLAGSMASK)
     Kqueue_constant(kqueue_note_trigger, NOTE_TRIGGER)
-  #endif 
+  #endif
 
   Kqueue_constant(kqueue_filter_evfilt_read, EVFILT_READ)
   Kqueue_constant(kqueue_filter_evfilt_write, EVFILT_WRITE)
   Kqueue_constant(kqueue_filter_evfilt_timer, EVFILT_TIMER)
   Kqueue_constant(kqueue_filter_evfilt_vnode, EVFILT_VNODE)
   Kqueue_constant(kqueue_filter_evfilt_proc, EVFILT_PROC)
+#ifdef __OpenBSD__
+  Kqueue_constant(kqueue_filter_evfilt_except, EVFILT_EXCEPT)
+#endif
 
   Kqueue_constant(kqueue_flag_ev_add, EV_ADD)
   Kqueue_constant(kqueue_flag_ev_receipt, EV_RECEIPT)

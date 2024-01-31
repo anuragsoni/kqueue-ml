@@ -70,6 +70,10 @@ module Null = struct
     let vnode = `Not_implemented
     let proc = `Not_implemented
 
+    [%%if defined OPENBSD]
+    let except = `Not_implemented
+    [%%endif]
+
     [%%if defined EVFILT_USER_AVAILABLE]
 
     let user = `Not_implemented
@@ -360,6 +364,12 @@ module Filter = struct
 
   let proc = proc ()
 
+  [%%if defined OPENBSD]
+  external except: unit -> int = "kqueue_filter_evilt_except"
+
+  let except = except()
+  [%%endif]
+
   let known_filters =
     [ read, "EVFILT_READ"
     ; write, "EVFILT_WRITE"
@@ -367,6 +377,10 @@ module Filter = struct
     ; vnode, "EVFILT_VNODE"
     ]
   ;;
+
+  [%%if defined OPENBSD]
+  let known_filters = known_filters @ [ except, "EVFILT_EXCEPT"]
+  [%%endif]
 
   [%%if defined EVFILT_USER_AVAILABLE]
 
