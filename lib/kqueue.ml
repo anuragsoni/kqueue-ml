@@ -28,7 +28,9 @@ module Null = struct
     let useconds = `Not_implemented
     let nseconds = `Not_implemented
     let lowat = `Not_implemented
+    [%%ifndef FREEBSD]
     let oob = `Not_implemented
+    [%%endif]
     let delete = `Not_implemented
     let write = `Not_implemented
     let extend = `Not_implemented
@@ -39,7 +41,9 @@ module Null = struct
     let exit = `Not_implemented
     let fork = `Not_implemented
     let exec = `Not_implemented
+    [%%ifndef FREEBSD]
     let signal = `Not_implemented
+    [%%endif]
 
     [%%if defined EVFILT_USER_AVAILABLE]
 
@@ -65,6 +69,10 @@ module Null = struct
     let timer = `Not_implemented
     let vnode = `Not_implemented
     let proc = `Not_implemented
+
+    [%%if defined OPENBSD]
+    let except = `Not_implemented
+    [%%endif]
 
     [%%if defined EVFILT_USER_AVAILABLE]
 
@@ -169,10 +177,11 @@ module Note = struct
 
   let lowat = lowat ()
 
+  [%%ifndef FREEBSD]
   external oob : unit -> int = "kqueue_note_oob"
 
   let oob = oob ()
-
+  [%%endif]
   external delete : unit -> int = "kqueue_note_delete"
 
   let delete = delete ()
@@ -212,11 +221,11 @@ module Note = struct
   external exec : unit -> int = "kqueue_note_exec"
 
   let exec = exec ()
-
+  [%%ifndef FREEBSD]
   external signal : unit -> int = "kqueue_note_signal"
 
   let signal = signal ()
-
+  [%%endif]
   [%%if defined EVFILT_USER_AVAILABLE]
 
   external ffnop : unit -> int = "kqueue_note_ffnop"
@@ -355,6 +364,12 @@ module Filter = struct
 
   let proc = proc ()
 
+  [%%if defined OPENBSD]
+  external except: unit -> int = "kqueue_filter_evilt_except"
+
+  let except = except()
+  [%%endif]
+
   let known_filters =
     [ read, "EVFILT_READ"
     ; write, "EVFILT_WRITE"
@@ -362,6 +377,10 @@ module Filter = struct
     ; vnode, "EVFILT_VNODE"
     ]
   ;;
+
+  [%%if defined OPENBSD]
+  let known_filters = known_filters @ [ except, "EVFILT_EXCEPT"]
+  [%%endif]
 
   [%%if defined EVFILT_USER_AVAILABLE]
 

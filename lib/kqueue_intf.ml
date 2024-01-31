@@ -39,7 +39,9 @@ module type S = sig
     val useconds : t
     val nseconds : t
     val lowat : t
+    [%%ifndef FREEBSD]
     val oob : t
+    [%%endif]
     val delete : t
     val write : t
     val extend : t
@@ -50,7 +52,9 @@ module type S = sig
     val exit : t
     val fork : t
     val exec : t
+    [%%ifndef FREEBSD]
     val signal : t
+    [%%endif]
 
     [%%if defined EVFILT_USER_AVAILABLE]
 
@@ -77,7 +81,9 @@ module type S = sig
     val timer : t
     val vnode : t
     val proc : t
-
+    [%%if defined OPENBSD]
+    val except : t
+    [%%endif]
     [%%if defined EVFILT_USER_AVAILABLE]
 
     val user : t

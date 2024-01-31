@@ -106,13 +106,16 @@
     Kqueue_constant(kqueue_note_ffctrlmask, NOTE_FFCTRLMASK)
     Kqueue_constant(kqueue_note_fflagsmask, NOTE_FFLAGSMASK)
     Kqueue_constant(kqueue_note_trigger, NOTE_TRIGGER)
-  #endif 
+  #endif
 
   Kqueue_constant(kqueue_filter_evfilt_read, EVFILT_READ)
   Kqueue_constant(kqueue_filter_evfilt_write, EVFILT_WRITE)
   Kqueue_constant(kqueue_filter_evfilt_timer, EVFILT_TIMER)
   Kqueue_constant(kqueue_filter_evfilt_vnode, EVFILT_VNODE)
   Kqueue_constant(kqueue_filter_evfilt_proc, EVFILT_PROC)
+#ifdef __OpenBSD__
+  Kqueue_constant(kqueue_filter_evfilt_except, EVFILT_EXCEPT)
+#endif
 
   Kqueue_constant(kqueue_flag_ev_add, EV_ADD)
   Kqueue_constant(kqueue_flag_ev_receipt, EV_RECEIPT)
@@ -127,7 +130,9 @@
   Kqueue_constant(kqueue_note_useconds, NOTE_USECONDS)
   Kqueue_constant(kqueue_note_nseconds, NOTE_NSECONDS)
   Kqueue_constant(kqueue_note_lowat, NOTE_LOWAT)
+#ifndef __FreeBSD__
   Kqueue_constant(kqueue_note_oob, NOTE_OOB)
+#endif
   Kqueue_constant(kqueue_note_delete, NOTE_DELETE)
   Kqueue_constant(kqueue_note_write, NOTE_WRITE)
   Kqueue_constant(kqueue_note_extend, NOTE_EXTEND)
@@ -138,7 +143,9 @@
   Kqueue_constant(kqueue_note_exit, NOTE_EXIT)
   Kqueue_constant(kqueue_note_fork, NOTE_FORK)
   Kqueue_constant(kqueue_note_exec, NOTE_EXEC)
+#ifndef __FreeBSD__
   Kqueue_constant(kqueue_note_signal, NOTE_SIGNAL)
+#endif
 #else
   typedef int dummy_definition;
 #endif
