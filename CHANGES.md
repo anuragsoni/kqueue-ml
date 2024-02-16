@@ -1,3 +1,8 @@
+# 0.4.0
+
+* Use conditional compilation to avoid using NOTE_OOB, NOTE_SIGNAL on FreeBSD (#18, @DavidAlphaFox)
+* Disable EVFILT_EXCEPT on OpenBSD (#18, @DavidAlphaFox)
+
 # 0.3.0
 
 * Support EVFILT_USER

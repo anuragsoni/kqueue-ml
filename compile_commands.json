@@ -1,0 +1,29 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-iquote",
+      ".",
+      "-O2",
+      "-fno-strict-aliasing",
+      "-fwrapv",
+      "-pthread",
+      "-D_FILE_OFFSET_BITS=64",
+      "-O2",
+      "-fno-strict-aliasing",
+      "-fwrapv",
+      "-pthread",
+      "-g",
+      "-I",
+      "/Users/anuragsoni/.opam/default/lib/ocaml",
+      "-I",
+      "/Users/anuragsoni/.opam/default/lib/ocaml/unix",
+      "-o",
+      "kqueue_stubs.o",
+      "-c",
+      "kqueue_stubs.c"
+    ],
+    "directory": "/Users/anuragsoni/Code/OCaml/kqueue-ml/_build/default/lib",
+    "file": "lib/kqueue_stubs.c"
+  }
+]
