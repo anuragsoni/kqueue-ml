@@ -1,3 +1,5 @@
+Active development moved to https://codeberg.org/anuragsoni/kqueue-ml
+
 # Kqueue
 
 Low level OCaml bindings for [kqueue](https://en.wikipedia.org/wiki/Kqueue).
